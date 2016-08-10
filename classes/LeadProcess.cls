@@ -153,7 +153,7 @@ public with sharing class LeadProcess {
             }
         }
           //If the field is a Date
-        else if(fieldType.getType() == Schema.DisplayType.Date) {
+        else if(fieldType.getType() == Schema.DisplayType.Date || fieldType.getType() == Schema.DisplayType.DateTime) {
             if(rule.Operator__c == GREATER_THAN){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(Date.valueOf(newMap.get(l.id).get(rule.FieldName__c)) > rule.FieldValueDate__c){
