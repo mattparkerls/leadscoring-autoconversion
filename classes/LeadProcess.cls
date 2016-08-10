@@ -8,6 +8,9 @@ public with sharing class LeadProcess {
     private static final String NOTEQUALS = '!=';
     private static final String CONTAINS = '{}';
     private static final String NOTCONTAINS = '!{}';
+    private static final String ADD = 'Add';
+    private static final String REPLACE = 'Set';
+    private static final String SUBTRACT = 'Subtract';
     private static String scoreField = (LeadProcessSetting__c.getInstance('ScoreField').Value__c == null) ? 'Score__c' : LeadProcessSetting__c.getInstance('ScoreField').Value__c;
     private static Decimal MAX_SCORE = (Decimal.valueOf(LeadProcessSetting__c.getInstance('MaxScore').Value__c) == null) ? 100 : Decimal.valueOf(LeadProcessSetting__c.getInstance('MaxScore').Value__c);
     private static Decimal CONVERT_SCORE = (Decimal.valueOf(LeadProcessSetting__c.getInstance('ConvertScore').Value__c) == null) ? 85 : Decimal.valueOf(LeadProcessSetting__c.getInstance('ConvertScore').Value__c);
@@ -57,32 +60,32 @@ public with sharing class LeadProcess {
               if(rule.Operator__c != 'range'){ 
                 if(rule.Operator__c == GREATER_THAN) {             
                     if(Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) > rule.FieldValueNumber__c){ 
-                      l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                      l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                     } 
                 }
                 if(rule.Operator__c == LESS_THAN) {             
                     if(Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) < rule.FieldValueNumber__c){ 
-                      l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                      l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                     } 
                 }
                 if(rule.Operator__c == GREATER_EQUALTO) {             
                     if(Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) >= rule.FieldValueNumber__c){ 
-                      l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                      l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                     } 
                 }
                 if(rule.Operator__c == LESS_EQUALTO) {             
                     if(Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) <= rule.FieldValueNumber__c){ 
-                      l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                      l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                     } 
                 }
                 if(rule.Operator__c == EQUALS) {             
                     if(Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) == rule.FieldValueNumber__c){ 
-                      l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                      l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                     } 
                 }
                 if(rule.Operator__c == NOTEQUALS) {             
                     if(Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) != rule.FieldValueNumber__c){ 
-                      l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                      l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                     } 
                 }
               }
@@ -90,15 +93,14 @@ public with sharing class LeadProcess {
               else {
                 if(Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) >= rule.RangeLow__c 
                     && Integer.valueOf(newMap.get(l.id).get(rule.FieldName__c)) <= rule.RangeHigh__c ){
-                  l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                      l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                 }
               }
             }
           //If the field is a Checkbox
           else if(fieldType.getType() == Schema.DisplayType.Boolean) { 
-
             if(newMap.get(l.id).get(rule.FieldName__c) == true){
-              l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+              l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
             }
             
           } 
@@ -107,14 +109,14 @@ public with sharing class LeadProcess {
             if(rule.Operator__c == EQUALS){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(String.valueOf(newMap.get(l.id).get(rule.FieldName__c)).contains(rule.FieldValueString__c)){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
             if(rule.Operator__c == NOTEQUALS){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(!String.valueOf(newMap.get(l.id).get(rule.FieldName__c)).contains(rule.FieldValueString__c)){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
@@ -126,28 +128,28 @@ public with sharing class LeadProcess {
             if(rule.Operator__c == EQUALS){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(String.valueOf(newMap.get(l.id).get(rule.FieldName__c)).toLowerCase() == (rule.FieldValueString__c.toLowerCase())){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
             if(rule.Operator__c == NOTEQUALS){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(String.valueOf(newMap.get(l.id).get(rule.FieldName__c)).toLowerCase() != (rule.FieldValueString__c.toLowerCase())){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
             if(rule.Operator__c == CONTAINS){
               if(newMap.get(l.id).get(rule.FieldName__c) != null){
                 if(String.valueOf(newMap.get(l.id).get(rule.FieldName__c)).toLowerCase().deleteWhiteSpace().contains(rule.FieldValueString__c.toLowerCase().deleteWhiteSpace())){
-                  l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                  l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                 }
               }
             }
             if(rule.Operator__c == NOTCONTAINS){
               if(newMap.get(l.id).get(rule.FieldName__c) != null){
                 if(!String.valueOf(newMap.get(l.id).get(rule.FieldName__c)).toLowerCase().deleteWhiteSpace().contains(rule.FieldValueString__c.toLowerCase().deleteWhiteSpace())){
-                  l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                  l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                 }
               }
             }
@@ -157,28 +159,28 @@ public with sharing class LeadProcess {
             if(rule.Operator__c == GREATER_THAN){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(Date.valueOf(newMap.get(l.id).get(rule.FieldName__c)) > rule.FieldValueDate__c){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
             if(rule.Operator__c == LESS_THAN){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(Date.valueOf(newMap.get(l.id).get(rule.FieldName__c)) < rule.FieldValueDate__c){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
             if(rule.Operator__c == GREATER_EQUALTO){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(Date.valueOf(newMap.get(l.id).get(rule.FieldName__c)) >= rule.FieldValueDate__c){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
             if(rule.Operator__c == LESS_EQUALTO){
                 if(newMap.get(l.id).get(rule.FieldName__c) != null){
                   if(Date.valueOf(newMap.get(l.id).get(rule.FieldName__c)) <= rule.FieldValueDate__c){
-                    l.put(scoreField,Integer.valueOf(l.get(scoreField)) + rule.ScoreValue__c);
+                    l.put(scoreField,newScore(l,rule.ScoreType__c,rule.ScoreValue__c));
                   }
                 }
             }
@@ -205,6 +207,24 @@ public with sharing class LeadProcess {
 
   }
 
+    /**
+    * @author Riitiir, LLC
+    * @desc Calculates a Lead score based on the score type
+    * @param: Lead l
+    * @param: String scoreType
+    * @param: Decimal scoreValue
+    */
+    private Decimal newScore (Lead l, String scoreType, Decimal scoreValue) {
+      Decimal score;
+      if(scoreType == ADD){
+        score = Integer.valueOf(l.get(scoreField)) + scoreValue;
+      } else if (scoreType == REPLACE){
+        score = scoreValue;
+      } else if (scoreType == SUBTRACT){
+        score = Integer.valueOf(l.get(scoreField)) - scoreValue;
+      }
+      return score;
+    }
 
     /**
     * @author: Riitiir, LLC
