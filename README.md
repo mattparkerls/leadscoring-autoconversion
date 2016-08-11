@@ -1,4 +1,4 @@
-# leadscoring-autoconversion
+# Lead Scoring and Auto Conversion Utility
 Configure scoring rules and auto-convert leads
 
 This unmanaged package contains 2 parts:
@@ -44,12 +44,14 @@ The core components are:
 * LeadProcessSetting.object
 
 You must first configure these Custom Settings:
+
 ![alt text](https://github.com/mattparkerls/leadscoring-autoconversion/blob/master/images/settinglist.png)
+
 The values can be whatever you want, but Convert Score defaults to 85, MaxScore defaults to 100, and the ScoreField defaults to Lead.Score__c.
 
 Once the settings are configured you need to create some Score Rules
 
-Depending on your Trigger Handler Framework of choice, you can call either Lead Scoring & Autoconversion together or separately.  Simply instantiate the LeadProcess.cls class and call:
+Finally, depending on your Trigger Handler Framework of choice, you can call either Lead Scoring & Autoconversion together or separately.  Simply instantiate the LeadProcess.cls class and call:
 ```java
 LeadProcess process = new LeadProcess();
 process.doScoring(newLeadmap,oldLeadmap);
