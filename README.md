@@ -22,7 +22,13 @@ Create "Score Rules" and configure complex scoring through point & click SFDC wi
 ![alt text](https://github.com/mattparkerls/leadscoring-autoconversion/blob/master/images/ruledetail.png)
 
 ## Autoconversion
+The autoconversion process fires off of a configurable "Convert Score" which looks at the same score result of the Score Rules. Basically, once the Lead has a score of 85 (or otherwise) it will automatically convert.  The conversion process follows these steps:
+1. Lead is matched with Existing Accounts
+2. If Lead already exists as an Account, Lead is converted and attached as a new Contact
+3. If Lead does not exist as an Account, Lead is reassigned according to active Assingment Rules
+4. After Assignment Rules run, Lead is converted into a new Account 
 
+Autoconversion should convert all Leads that meet a pre-definded score.  The goal is to convert highly-ranked Leads without creating duplicates. And assign these Leads to the proper owner.  
 
 ## Usage
 ### How to implement
