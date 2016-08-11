@@ -10,13 +10,16 @@ This unmanaged package contains 2 parts:
 Do you handle complex Lead scoring logic inside of a Trigger or Class? If so, this repo is for you. 
 
 Create "Score Rules" and configure complex scoring through point & click SFDC without any new code.  Filter text fields, picklists, date, numbers by the following operators:
-..* Equals/Not Equals
-..* Greater Than/Less Than
-..* Greater Than or Equal to/Less Than or Equal To
-..* Contains/Does Not Contain
-..* Ranges between 2 Numbers
+* Equals/Not Equals
+* Greater Than/Less Than
+* Greater Than or Equal to/Less Than or Equal To
+* Contains/Does Not Contain
+* Ranges between 2 Numbers
 
-
+#### Example Score Rules
+![alt text](https://github.com/mattparkerls/leadscoring-autoconversion/blob/master/images/rulelistview.png)
+#### Page Layout for Score Rule
+![alt text](https://github.com/mattparkerls/leadscoring-autoconversion/blob/master/images/ruledetail.png)
 
 ## Autoconversion
 
