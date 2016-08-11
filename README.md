@@ -55,8 +55,8 @@ The values can be whatever you want, but Convert Score defaults to 85, MaxScore 
 #### Finally, depending on your Trigger Handler Framework of choice, you can call either Lead Scoring & Autoconversion together or separately.  Simply instantiate the LeadProcess.cls class and call:
 ```java
 LeadProcess process = new LeadProcess();
-process.doScoring(newLeadmap,oldLeadmap);
-process.doRouting(newLeadmap,oldLeadmap);
+process.doScoring(Trigger.newmap,Trigger.oldmap);
+process.doAutoConversion(Trigger.newmap);
 ```
 Or from your Lead Trigger Handler:
 ```java
@@ -65,7 +65,7 @@ public class LeadTriggerHandler {
 public static void afterUpdate(map<Id,Lead> newmap , map<Id,Lead> oldmap){
     LeadProcess process = new LeadProcess();
     process.doScoring(newmap,oldmap);
-    process.doRouting(newmap,oldmap);
+    process.doAutoConversion(newmap);
 }
 
 }
