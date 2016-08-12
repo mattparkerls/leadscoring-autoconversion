@@ -27,15 +27,15 @@ The autoconversion process fires from a configurable "Convert Score":
 
 Once the Lead has a score of 85 (or otherwise) it will automatically convert.  
 The conversion process follows these steps:
-* Lead is matched with Existing Accounts
-* If Lead already exists as an Account, Lead is converted and attached as a new Contact
-* If Lead does not exist as an Account, Lead is reassigned according to active Assingment Rules
-* After Assignment Rules run, Lead is converted into a new Account 
+
+    1. Lead is matched with existing Contacts via Email_Domain__c
+    2. If Lead matches with a Contact, Lead is converted and attached to the parent Account as a new Contact
+    3. If Lead does not match, Lead is reassigned according to active Assingment Rules
+    4. After Assignment Rules run, Lead is converted into a new Account 
 
 Autoconversion should convert all Leads that meet the predefined score.  The goal is to convert highly-ranked Leads without creating duplicates. And assign these Leads to the proper owner.  
 
-## Usage
-### How to implement
+## How to implement
 
 The core components are:
 * LeadProcess.cls
@@ -43,18 +43,21 @@ The core components are:
 * ScoreRule__c.object
 * LeadProcessSetting.object
 
-LeadTrigger.trigger and LeadTriggerHandler.cls are included for example purposes only. 
+LeadTrigger.trigger and LeadTriggerHandler.cls are included for example purposes only.
 
-#### You must first configure these Custom Settings:
+### 1. Install the ummanaged package:
+
+### 2. Configure these Custom Settings:
 
 ![alt text](https://github.com/mattparkerls/leadscoring-autoconversion/blob/master/images/settinglist.png)
 
 The values can be whatever you want, but Convert Score defaults to 85, MaxScore defaults to 100, and the ScoreField defaults to Lead.Score__c.
 
-#### Once the settings are configured you need to create some Score Rules
+### 3. Once the settings are configured you need to create some Score Rules
 ![alt text](https://github.com/mattparkerls/leadscoring-autoconversion/blob/master/images/newrule.png)
 
-#### Finally, depending on your Trigger Handler Framework of choice, you can call either Lead Scoring & Autoconversion together or separately.  Simply instantiate the LeadProcess.cls class and call:
+### 4. Call LeadProcess.cls
+Finally, depending on your Trigger Handler Framework of choice, you can call either Lead Scoring & Autoconversion together or separately.  Simply instantiate the LeadProcess.cls class and call:
 ```java
 LeadProcess process = new LeadProcess();
 process.doScoring(Trigger.newmap,Trigger.oldmap);
@@ -73,4 +76,4 @@ public static void afterUpdate(map<Id,Lead> newmap , map<Id,Lead> oldmap){
 }
 ```
 
-Does not support: Before Insert, Before Update, After Delete
+NOTE Does not support these trigger operations yet: Before Insert, Before Update, After Delete
