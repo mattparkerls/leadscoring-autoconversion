@@ -43,6 +43,8 @@ The core components are:
 * ScoreRule__c.object
 * LeadProcessSetting.object
 
+LeadTrigger.trigger and LeadTriggerHandler.cls are included for example purposes only. 
+
 #### You must first configure these Custom Settings:
 
 ![alt text](https://github.com/mattparkerls/leadscoring-autoconversion/blob/master/images/settinglist.png)
