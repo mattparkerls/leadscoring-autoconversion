@@ -6,6 +6,8 @@ This unmanaged package contains 2 parts:
 1. Lead Scoring
 2. Autoconversion 
 
+The goal is to allow Sales Leadership to define criteria for scoring Leads. And automatically convert the highly-scored Leads without creating duplicate Accounts.  
+
 ## Lead Scoring
 Do you handle complex Lead scoring logic inside of a Trigger or Class? If so, this repo is for you. 
 
@@ -33,7 +35,7 @@ The conversion process follows these steps:
     3. If Lead does not match, Lead is reassigned according to active Assingment Rules
     4. After Assignment Rules run, Lead is converted into a new Account 
 
-Autoconversion should convert all Leads that meet the predefined score.  The goal is to convert highly-ranked Leads without creating duplicates. And assign these Leads to the proper owner.  
+
 
 ## How to implement
 
