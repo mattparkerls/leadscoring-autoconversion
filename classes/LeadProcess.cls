@@ -238,7 +238,7 @@ public with sharing class LeadProcess {
         list<Lead> leadsToAssign = new list<Lead>();
         map<String,String> emailToAccountIdMap = new map<String,String>();
         map<String,String> accountOwnerMap = new map<String,String>();
-        Set<Id> leadDomains = new Set<Id>();
+        Set<String> leadDomains = new Set<String>();
         Set<Id> leadsWithEmails = new Set<Id>();
 
 
@@ -256,7 +256,7 @@ public with sharing class LeadProcess {
         // Now search the database looking for Contacts with matching email domains
         for(Contact[] contacts:[SELECT Id, Email_Domain__c, accountid, account.ownerid FROM Contact WHERE Email_Domain__c IN :leadDomains]) {
            for(Contact c:contacts) {
-              if(c.Email != null) {
+              if(c.Email_Domain__c != null) {
                  //strip the email domain into maps
                   emailToAccountIdMap.put(c.Email_Domain__c,c.accountId);
                   accountOwnerMap.put(c.Email_Domain__c,c.account.ownerid);

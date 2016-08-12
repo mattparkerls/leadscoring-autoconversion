@@ -5,5 +5,11 @@ public class LeadTriggerHandler {
 		process.doScoring(newmap,oldmap);
 		process.doAutoConversion(newmap);
 	}
+
+	public static void afterInsert(map<Id,Lead> newmap){
+		LeadProcess process = new LeadProcess();
+		process.doScoring(newmap,newmap);
+		process.doAutoConversion(newmap);
+	}
   
 }
