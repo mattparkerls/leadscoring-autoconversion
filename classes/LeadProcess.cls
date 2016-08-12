@@ -233,54 +233,59 @@ public with sharing class LeadProcess {
     * @param: Trigger.oldMap
     * @return: void
     */
-    public void doRouting(map<Id,Lead> newMap, map<Id,Lead> oldMap){
+    public void doAutoConversion(map<Id,Lead> newMap){
 
         list<Lead> leadsToAssign = new list<Lead>();
-        set<String> leadDomains = new set<String>();
-        set<Id> leadIds = new set<Id>();
-        map<String,String> accountIdMap = new map<String,String>();
+        map<String,String> emailToAccountIdMap = new map<String,String>();
         map<String,String> accountOwnerMap = new map<String,String>();
+        Set<Id> leadDomains = new Set<Id>();
+        Set<Id> leadsWithEmails = new Set<Id>();
 
-        for(Lead l : [SELECT Id, Email_Domain__c,Score__c FROM Lead WHERE Id IN :newMap.keyset() AND isConverted = false]){
+
+        for(Lead l : [SELECT Id, Email, Score__c FROM Lead WHERE Id IN :newMap.keyset() AND isConverted = false]){
             //only add lead email domains that qualify for auto conversion
             if(l.Score__c >= CONVERT_SCORE){
-                if(l.Email_Domain__c != '' && l.Email_Domain__c != null){
-                  leadDomains.add(l.Email_Domain__c);
-                  leadIds.add(l.id);
+                if(l.Email != null){
+                  leadDomains.add(l.Email.split('@').get(1)); //strip the email domain
+                  leadsWithEmails.add(l.id);
                 }
             } else {
                 continue;
             }
         }
+        // Now search the database looking for Contacts with matching email domains
+        for(Contact[] contacts:[SELECT Id, Email_Domain__c, accountid, account.ownerid FROM Contact WHERE Email_Domain__c IN :leadDomains]) {
+           for(Contact c:contacts) {
+              if(c.Email != null) {
+                 //strip the email domain into maps
+                  emailToAccountIdMap.put(c.Email_Domain__c,c.accountId);
+                  accountOwnerMap.put(c.Email_Domain__c,c.account.ownerid);
+             }
 
-        //find all the accounts where there is a matching domain
-        for(Account a : [SELECT id,Email_Domain__c,OwnerId FROM Account WHERE Email_Domain__c IN :leadDomains]){
-            //if the account has a domain, put it in the map
-            if(a.Email_Domain__c != '' && a.Email_Domain__c != null){
-                accountIdMap.put(a.Email_Domain__c,a.Id);
-                accountOwnerMap.put(a.Email_Domain__c,a.ownerid);
             }
-        }
+        } 
 
-        for(Lead l : [SELECT id, Email_Domain__c FROM Lead WHERE id IN :leadIds AND isConverted=false]){
-          //if we don't have a match, add Lead to leads to Assign 
-          if(accountIdMap.get(l.Email_Domain__c) == null){
+
+        for(Lead l : [SELECT Id, Email, Score__c FROM Lead WHERE Id IN :leadsWithEmails]){
+          String leadDomain = l.Email.split('@').get(1);
+          //if we don't have a match, add to Leads to Assign 
+          if(emailToAccountIdMap.get(leadDomain) == null){
            l.auto_convert__c = true; //set auto convert flag to true
            leadsToAssign.add(l);
           } 
-          //else if the lead domain matches with an existing account AND ONLY 1 account THEN convert and attach to the same account
-          else if(accountIdMap.get(l.Email_Domain__c) != null){
+          //else if the lead domain matches with an existing Contact THEN convert and attach to the Contact's parent Account
+          else if(emailToAccountIdMap.get(leadDomain) != null){
             Database.LeadConvert lc = new Database.LeadConvert();
             lc.setLeadId(l.id);
             LeadStatus convertStatus = [SELECT Id, MasterLabel FROM LeadStatus WHERE IsConverted=true LIMIT 1];
             lc.setConvertedStatus(convertStatus.MasterLabel);
             lc.setDoNotCreateOpportunity(true);
-            lc.setAccountId(accountIdMap.get(l.Email_Domain__c));
-            lc.setOwnerId(accountOwnerMap.get(l.Email_Domain__c));
+            lc.setAccountId(emailToAccountIdMap.get(leadDomain));
+            lc.setOwnerId(accountOwnerMap.get(leadDomain));
             Database.LeadConvertResult lcr = Database.convertLead(lc);
           }
         }
-        //lastly if we don't have an account to attach to, run assignment rules and reassign the lead
+        //lastly if we don't have an account to attach to, run assignment rules and reassign the lead - it will be converted via process builder later
         if(!leadsToAssign.isEmpty()){
             loopCount += 1;
             if(loopCount <= 3){
@@ -294,7 +299,7 @@ public with sharing class LeadProcess {
 
     /**
     * @author: Riitiir, LLC
-    * @desc: Converts leads from Process Builder - that were not already converted via doRouting()
+    * @desc: Converts leads from Process Builder - that were not already converted via doAutoConversion()
     * @param: List<ID> 
     * @return: void
     */
@@ -302,32 +307,38 @@ public with sharing class LeadProcess {
     public static void convertLeadsByProcess(list<ID> leadIds){
 
         set<String> leadDomains = new set<String>();
-        map<String,String> accountIdMap = new map<String,String>();
+        Set<Id> leadsWithEmails = new Set<Id>();
+        map<String,String> emailToAccountIdMap = new map<String,String>();
         map<String,String> accountOwnerMap = new map<String,String>();
 
-        for(Lead l : [SELECT Id, Email_Domain__c FROM Lead WHERE Id IN :leadIds]){
-          if(l.Email_Domain__c != '' && l.Email_Domain__c != null){
-            leadDomains.add(l.Email_Domain__c);
-          }
+        for(Lead l : [SELECT Id, Email, Score__c FROM Lead WHERE Id IN :leadIds AND isConverted = false]){
+            if(l.Email != null){
+                  leadDomains.add(l.Email.split('@').get(1)); //strip the email domain
+                  leadsWithEmails.add(l.id);
+            } else {
+                continue;
+            }
         }
-        //find all the accounts where there is a matching domain
-        for(Account a : [SELECT id,Email_Domain__c FROM Account WHERE Email_Domain__c IN :leadDomains]){
-          //if the account has a domain, put it in the map
-          if(a.Email_Domain__c != '' && a.Email_Domain__c != null){
-            accountIdMap.put(a.Email_Domain__c,a.Id);
-            //accountOwnerMap.put(a.Email_Domain__c,a.ownerid);
-          }
-        }
+        
+        // Now search the database looking for Contacts with matching email domains
+        for(Contact[] contacts:[SELECT Id, Email_Domain__c, accountid, account.ownerid FROM Contact WHERE Email_Domain__c IN :leadDomains]) {
+           for(Contact c:contacts) {
+              if(c.Email_Domain__c != null) {
+                 //strip the email domain into maps
+                  emailToAccountIdMap.put(c.Email_Domain__c,c.accountId);
+             }
+            }
+        } 
 
         //convert each lead to a new Account or attach to existing Account
-        for(Lead l : [SELECT Id,Email_Domain__c FROM Lead WHERE Id IN :leadIds]){ 
+        for(Lead l : [SELECT Id,Email FROM Lead WHERE Id IN :leadsWithEmails]){ 
             Database.LeadConvert lc = new Database.LeadConvert();
             lc.setLeadId(l.id);
             LeadStatus convertStatus = [SELECT Id, MasterLabel FROM LeadStatus WHERE IsConverted=true LIMIT 1];
             lc.setConvertedStatus(convertStatus.MasterLabel);
             lc.setDoNotCreateOpportunity(true);
-            if(accountIdMap.get(l.Email_Domain__c) != null){
-              lc.setAccountId(accountIdMap.get(l.Email_Domain__c));
+            if(emailToAccountIdMap.get(l.Email.split('@').get(1)) != null){
+              lc.setAccountId(emailToAccountIdMap.get(l.Email.split('@').get(1)));
             }
             Database.LeadConvertResult lcr = Database.convertLead(lc);
         }
