@@ -1,7 +1,10 @@
 trigger LeadTrigger on Lead (after insert,after update) {
 
-	if(Trigger.isAfter && Trigger.isUpdate){
-	  LeadTriggerHandler.afterUpdate(trigger.newmap, trigger.oldmap);
+	if(Trigger.isUpdate && Trigger.isAfter){
+		LeadTriggerHandler.afterUpdate(trigger.newMap, trigger.oldMap);
+	}
+	if(Trigger.isInsert && Trigger.isAfter){
+		LeadTriggerHandler.afterInsert(trigger.newMap);
 	}
 	
 }
